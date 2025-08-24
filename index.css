@@ -1,0 +1,463 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Utility Class */
+.hidden {
+    display: none !important;
+}
+
+body {
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+
+#app-wrapper {
+    position: relative; /* Needed for overlay */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+#game-container {
+    position: relative; /* Needed for absolutely positioned children like the controls guide */
+    border: 4px solid #444;
+    border-radius: 8px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    background-color: #000;
+    /* pointer-events: none; /* This was preventing clicks on child elements like the start menu */
+}
+
+#game-canvas {
+    display: block;
+    border-radius: 4px;
+}
+
+/* --- Controls Guide Styles --- */
+#controls-guide {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 220px;
+    background: rgba(15, 15, 20, 0.85);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 80, 80, 0.3);
+    font-family: 'Roboto', sans-serif;
+    color: #e0e0e0;
+    z-index: 50;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 80, 80, 0.15);
+    pointer-events: auto;
+    
+    /* Animation properties */
+    opacity: 0;
+    transform: translateX(-20px) scale(0.98);
+    transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#controls-guide.visible {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.controls-title {
+    font-family: 'Jolly Lodger', cursive;
+    font-size: 24px;
+    color: #ff4d4d;
+    text-align: center;
+    margin: -5px -5px 10px -5px;
+    padding-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 6px rgba(255, 80, 80, 0.7);
+    border-bottom: 1px solid rgba(255, 80, 80, 0.25);
+}
+
+.control-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 14px;
+}
+
+.control-item span:first-child {
+    color: #ccc;
+    letter-spacing: 0.5px;
+}
+
+#controls-guide .key {
+    display: inline-block;
+    background: linear-gradient(to bottom, #555, #383838);
+    border: 1px solid #222;
+    border-bottom: 2px solid #1a1a1a;
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+    font-size: 12px;
+    text-transform: uppercase;
+    min-width: 20px;
+    text-align: center;
+    margin-left: 10px;
+    transition: all 0.1s ease-in-out;
+}
+
+#controls-guide .key:active {
+    transform: translateY(1px) scale(0.98);
+    border-bottom-width: 1px;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+
+/* --- Start Menu Styles --- */
+#start-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+    display: flex;
+    flex-direction: column; /* Arrange title and button vertically */
+    justify-content: center;
+    align-items: center;
+    gap: 20px; /* Reduced space between title and button */
+    z-index: 100;
+    border-radius: 4px;
+    opacity: 1;
+    transition: opacity 0.5s ease-out; /* Fade-out transition */
+}
+
+#game-title {
+    font-family: 'Jolly Lodger', cursive; /* Changed font */
+    font-size: 90px; /* Adjusted size for new font */
+    color: #e0e0e0;
+    text-shadow: 0 0 10px rgba(255, 80, 80, 0.7), 
+                 0 0 20px rgba(255, 80, 80, 0.5), 
+                 0 0 35px rgba(255, 80, 80, 0.3),
+                 2px 2px 2px rgba(0,0,0,0.8);
+    text-align: center;
+    letter-spacing: 3px;
+    white-space: nowrap; /* Ensure single line */
+}
+
+#start-button {
+    height: 64px;
+    padding: 0 30px;
+    font-size: 24px;
+    font-family: 'Roboto', sans-serif;
+    color: #f0e6d2;
+    background: #5a0a0a;
+    border: 2px solid #2e0505;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    box-shadow: 0 0 15px rgba(255, 50, 50, 0.6), inset 0 0 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#start-button:hover:not(:disabled) {
+    background: #7a0e0e;
+    border-color: #400707;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 0 25px rgba(255, 80, 80, 0.8), inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+#start-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    background: #5a0a0a;
+}
+
+/* --- Top UI Buttons --- */
+#mute-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 101;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    background: #5a0a0a;
+    border: 2px solid #2e0505;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 50, 50, 0.6), inset 0 0 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- Slider Toggle for Touch Controls --- */
+#touch-toggle-container {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #5a0a0a;
+    border: 2px solid #2e0505;
+    border-radius: 5px;
+    padding: 0 15px;
+    height: 50px;
+    box-shadow: 0 0 15px rgba(255, 50, 50, 0.6), inset 0 0 5px rgba(0, 0, 0, 0.5);
+    color: #f0e6d2;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.touch-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.touch-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.touch-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    border: 1px solid #111;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 26px;
+}
+
+.touch-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 2px;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input#touch-toggle-checkbox:checked + .touch-toggle-slider {
+    background-color: #c40000;
+    border-color: #ff5151;
+    box-shadow: 0 0 5px #c40000;
+}
+
+input#touch-toggle-checkbox:checked + .touch-toggle-slider:before {
+    -webkit-transform: translateX(24px);
+    -ms-transform: translateX(24px);
+    transform: translateX(24px);
+    background-color: white;
+}
+
+
+#mute-button:hover {
+    background: #7a0e0e;
+    border-color: #400707;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 25px rgba(255, 80, 80, 0.8), inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+#mute-button svg {
+    width: 28px;
+    height: 28px;
+    fill: #f0e6d2;
+    transition: transform 0.1s ease-in-out;
+}
+
+#mute-button:active svg {
+    transform: scale(0.95);
+}
+
+
+/* --- On-Screen Touch Controls --- */
+#touch-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    z-index: 50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px;
+    pointer-events: none; /* Container doesn't block clicks */
+}
+
+.touch-button {
+    width: 80px;
+    height: 80px;
+    background: rgba(46, 5, 5, 0.6);
+    border: 2px solid #2e0505;
+    border-radius: 50%;
+    pointer-events: auto; /* Buttons are clickable */
+    color: #f0e6d2;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(255, 50, 50, 0.4), inset 0 0 4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+.touch-button.pressed,
+.touch-button:active {
+    background: rgba(122, 14, 14, 0.8);
+    transform: scale(0.95);
+}
+
+.d-pad {
+    display: flex;
+    gap: 25px;
+}
+
+.d-pad-left::before, .d-pad-right::before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 15px 20px 15px 0; /* Triangle shape */
+}
+
+.d-pad-left::before {
+    transform: rotate(180deg);
+    border-color: transparent #f0e6d2 transparent transparent;
+}
+
+.d-pad-right::before {
+    border-color: transparent #f0e6d2 transparent transparent;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-areas:
+        ". melee shoot"
+        "jump jump jump";
+    gap: 20px;
+    align-items: center;
+    justify-items: center;
+}
+
+.action-jump {
+    grid-area: jump;
+    width: 180px; /* Wider button */
+    height: 70px;
+    border-radius: 35px;
+}
+
+.action-jump::before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 15px 20px 15px; /* Up arrow */
+    border-color: transparent transparent #f0e6d2 transparent;
+}
+
+.action-melee { grid-area: melee; }
+.action-shoot { grid-area: shoot; }
+
+
+/* --- Language Selector Styles --- */
+#language-selector {
+    margin-top: 25px;
+    text-align: center;
+}
+
+#language-selector-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #c7c7c7;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+#language-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.language-option {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 180px;
+    margin: 4px auto;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: 'Roboto', sans-serif;
+    color: #aaa;
+    transition: all 0.2s ease-in-out;
+    border-radius: 5px;
+}
+
+.language-option:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.language-option .bullet {
+    visibility: hidden;
+    font-size: 28px;
+    line-height: 1;
+    margin-right: 15px;
+    color: #ff4d4d;
+    transition: visibility 0.1s;
+}
+
+.language-option.selected .bullet {
+    visibility: visible;
+}
+
+.language-option.selected .lang-text {
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}

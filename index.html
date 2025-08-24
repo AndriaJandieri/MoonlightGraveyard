@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jolly+Lodger&family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="app-wrapper">
+        <div id="game-container">
+            <canvas id="game-canvas" width="1000" height="600" aria-label="Adventure Game Screen"></canvas>
+            <div id="controls-guide" class="hidden"></div>
+            <div id="start-menu">
+                <h1 id="game-title">Moonlight Graveyard</h1>
+                <button id="start-button">Start Game</button>
+                <div id="language-selector">
+                    <p id="language-selector-label">Choose language:</p>
+                    <div id="language-options">
+                        <div class="language-option selected" data-lang="en">
+                            <span class="bullet">&bull;</span>
+                            <span class="lang-text">English</span>
+                        </div>
+                        <div class="language-option" data-lang="ka">
+                            <span class="bullet">&bull;</span>
+                            <span class="lang-text">ქართული</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- On-Screen Touch Controls -->
+            <div id="touch-controls" class="hidden">
+                <div class="d-pad">
+                    <button class="touch-button d-pad-left" data-action="moveLeft" aria-label="Move Left"></button>
+                    <button class="touch-button d-pad-right" data-action="moveRight" aria-label="Move Right"></button>
+                </div>
+                <div class="action-buttons">
+                    <button id="melee-touch-button" class="touch-button action-melee" data-action="melee" aria-label="Melee Attack">Knife</button>
+                    <button id="shoot-touch-button" class="touch-button action-shoot" data-action="shoot" aria-label="Shoot">Fire</button>
+                    <button class="touch-button action-jump" data-action="jump" aria-label="Jump"></button>
+                </div>
+            </div>
+            
+            <div id="touch-toggle-container">
+                <span id="touch-toggle-label" class="touch-toggle-label">Touch Control</span>
+                <label class="touch-toggle-switch">
+                    <input type="checkbox" id="touch-toggle-checkbox">
+                    <span class="touch-toggle-slider"></span>
+                </label>
+            </div>
+            <button id="mute-button" aria-label="Toggle Sound" title="Toggle Sound"></button>
+        </div>
+    </div>
+    <script type="module" src="index.js"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
