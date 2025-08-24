@@ -475,3 +475,40 @@ input#touch-toggle-checkbox:checked + .touch-toggle-slider:before {
     color: #fff;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
+
+/* --- Responsive Touch Controls for Landscape Mobile --- */
+@media (max-height: 700px) and (orientation: landscape) {
+    #touch-controls {
+        padding: 15px 30px;
+    }
+
+    .touch-button {
+        width: 65px;
+        height: 65px;
+        font-size: 16px;
+    }
+
+    .d-pad {
+        gap: 25px;
+    }
+
+    .d-pad-left::before, .d-pad-right::before {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 65px 95px;
+        gap: 15px;
+    }
+
+    .action-jump {
+        width: 95px;
+        height: 95px;
+    }
+    
+    .action-jump::before {
+        width: 45px;
+        height: 45px;
+    }
+}
