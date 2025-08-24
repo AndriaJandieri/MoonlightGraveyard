@@ -110,17 +110,18 @@ export class Environment {
         const bgImage = this.assets.background?.[0];
         if (bgImage) {
             const parallaxX = camera.x * 0.03;
-            const startX = Math.floor(-(parallaxX % this.gameWidth));
+            const bgWidth = bgImage.naturalWidth || this.gameWidth;
+            // Removed Math.floor to allow for smooth, sub-pixel rendering of the background.
+            const startX = -(parallaxX % bgWidth);
             
-            // Use a small overlap when drawing repeating backgrounds to prevent seams
-            // caused by browser anti-aliasing at the image edges.
+            // Use a small overlap when drawing repeating backgrounds to prevent seams.
             const overlap = 2;
 
-            // Draw the first instance of the background, slightly wider to create the overlap
-            context.drawImage(bgImage, startX, 0, this.gameWidth + overlap, this.gameHeight);
+            // Draw the first instance of the background.
+            context.drawImage(bgImage, startX, 0, bgWidth, this.gameHeight);
             
-            // Draw the second instance that follows it
-            context.drawImage(bgImage, startX + this.gameWidth, 0, this.gameWidth + overlap, this.gameHeight);
+            // Draw the second instance that follows it, overlapping slightly.
+            context.drawImage(bgImage, startX + bgWidth - overlap, 0, bgWidth, this.gameHeight);
 
             // The fog effect remains the same, drawn over the entire canvas
             const fogGradient = context.createLinearGradient(0, this.gameHeight, 0, this.gameHeight - 350);
@@ -135,15 +136,21 @@ export class Environment {
         if (!this.isLoaded) return;
         const cameraLeft = camera.x;
         const cameraRight = camera.x + this.gameWidth;
+        const overlap = 1; // The amount in pixels to overlap tiles to prevent seams.
 
         const groundTile = this.assets.groundTiles?.[0];
         if (groundTile) {
             const tileWidth = groundTile.width;
-            const startTileIndex = Math.floor(cameraLeft / tileWidth);
-            const endTileIndex = Math.ceil(cameraRight / tileWidth);
+            // The effective width is the tile's width minus the overlap.
+            const effectiveTileWidth = tileWidth - overlap;
+            const startTileIndex = Math.floor(cameraLeft / effectiveTileWidth);
+            const endTileIndex = Math.ceil(cameraRight / effectiveTileWidth);
+
             for (let i = startTileIndex; i < endTileIndex; i++) {
-                const xPos = i * tileWidth;
+                // Position each tile based on the effective width.
+                const xPos = i * effectiveTileWidth;
                 if (xPos < this.worldWidth) {
+                    // Draw the tile at its full original width, which creates the overlap.
                     context.drawImage(groundTile, xPos, this.groundLevel);
                 }
             }
@@ -154,15 +161,18 @@ export class Environment {
         if (leftTile && midTile && rightTile) {
             const standardPlatformWidth = leftTile.width + midTile.width + rightTile.width;
             for (const platform of LEVEL_DATA.platforms) {
+                // Use original width for culling to be safe
                 if (platform.x + standardPlatformWidth >= cameraLeft && platform.x <= cameraRight) {
                     let currentX = platform.x;
                     // Draw left tile
                     context.drawImage(leftTile, currentX, platform.y);
-                    currentX += leftTile.width;
+                    // Position the next tile to overlap with this one
+                    currentX += leftTile.width - overlap;
 
                     // Draw ONE middle tile
                     context.drawImage(midTile, currentX, platform.y);
-                    currentX += midTile.width;
+                    // Position the next tile to overlap
+                    currentX += midTile.width - overlap;
 
                     // Draw right tile
                     context.drawImage(rightTile, currentX, platform.y);

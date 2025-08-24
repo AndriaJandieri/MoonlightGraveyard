@@ -318,12 +318,12 @@ input#touch-toggle-checkbox:checked + .touch-toggle-slider:before {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 200px;
+    height: auto;
     z-index: 50;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 25px;
+    align-items: flex-end;
+    padding: 20px 40px;
     pointer-events: none; /* Container doesn't block clicks */
 }
 
@@ -354,32 +354,34 @@ input#touch-toggle-checkbox:checked + .touch-toggle-slider:before {
 
 .d-pad {
     display: flex;
-    gap: 25px;
+    gap: 40px;
 }
 
 .d-pad-left::before, .d-pad-right::before {
     content: '';
     display: block;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 15px 20px 15px 0; /* Triangle shape */
+    width: 40px;
+    height: 40px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
 
 .d-pad-left::before {
-    transform: rotate(180deg);
-    border-color: transparent #f0e6d2 transparent transparent;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23f0e6d2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>');
 }
 
 .d-pad-right::before {
-    border-color: transparent #f0e6d2 transparent transparent;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23f0e6d2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>');
 }
 
 .action-buttons {
     display: grid;
     grid-template-areas:
-        ". melee shoot"
-        "jump jump jump";
+        "melee jump"
+        "shoot jump";
+    grid-template-columns: 80px 110px;
+    grid-template-rows: repeat(2, 1fr);
     gap: 20px;
     align-items: center;
     justify-items: center;
@@ -387,19 +389,20 @@ input#touch-toggle-checkbox:checked + .touch-toggle-slider:before {
 
 .action-jump {
     grid-area: jump;
-    width: 180px; /* Wider button */
-    height: 70px;
-    border-radius: 35px;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
 }
 
 .action-jump::before {
     content: '';
     display: block;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 15px 20px 15px; /* Up arrow */
-    border-color: transparent transparent #f0e6d2 transparent;
+    width: 50px;
+    height: 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23f0e6d2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>');
 }
 
 .action-melee { grid-area: melee; }

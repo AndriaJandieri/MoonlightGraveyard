@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,108 +6,114 @@ import { CONFIG } from './Config.js';
 
 /**
  * Handles keyboard, touch, and mouse inputs, translating them into unified game actions.
+ * This version correctly handles multiple simultaneous inputs (e.g., multi-touch)
+ * by tracking input sources separately and combining their states.
  */
 class InputHandler {
     constructor() {
-        // Keyboard state
-        this.keys = new Set();
-        // Unified action state for the game to read
-        this.actions = {
-            moveLeft: false,
-            moveRight: false,
-            jump: false,
-            shoot: false,
-            melee: false,
-            openChest: false
+        // State for keyboard inputs
+        this.keyboardState = {
+            moveLeft: false, moveRight: false, jump: false,
+            shoot: false, melee: false, openChest: false,
         };
-        // Touch/Mouse button elements
+        // State for touch/mouse button inputs
+        this.buttonState = {
+            moveLeft: false, moveRight: false, jump: false,
+            shoot: false, melee: false, openChest: false,
+        };
+        // The final, unified action state for the game to read
+        this.actions = { ...this.keyboardState };
+
         this.touchButtons = document.querySelectorAll('.touch-button');
 
         // Bind methods to ensure 'this' is correct
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
-        this.handleTouchStart = this.handleTouchStart.bind(this);
-        this.handleTouchEnd = this.handleTouchEnd.bind(this);
-        this.handleMouseDown = this.handleMouseDown.bind(this);
-        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleButtonDown = this.handleButtonDown.bind(this);
+        this.handleButtonUp = this.handleButtonUp.bind(this);
         
         // Add event listeners
         window.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener('keyup', this.handleKeyUp);
-        window.addEventListener('mouseup', this.handleMouseUp); // Listen globally for mouse release
 
         this.touchButtons.forEach(button => {
-            button.addEventListener('touchstart', this.handleTouchStart, { passive: true });
-            button.addEventListener('touchend', this.handleTouchEnd, { passive: true });
-            button.addEventListener('mousedown', this.handleMouseDown);
-            button.addEventListener('contextmenu', (e) => e.preventDefault()); // Prevent right-click menu
+            button.addEventListener('touchstart', this.handleButtonDown, { passive: false });
+            button.addEventListener('touchend', this.handleButtonUp, { passive: false });
+            button.addEventListener('mousedown', this.handleButtonDown);
+            button.addEventListener('mouseup', this.handleButtonUp);
+            button.addEventListener('mouseleave', this.handleButtonUp); // Handle mouse dragging off
+            button.addEventListener('contextmenu', (e) => e.preventDefault());
         });
+    }
+
+    /**
+     * Combines keyboard and button states into the final actions object.
+     * An action is true if it's triggered by either keyboard OR button press.
+     */
+    updateCombinedActions() {
+        for (const key in this.actions) {
+            this.actions[key] = this.keyboardState[key] || this.buttonState[key];
+        }
     }
 
     handleKeyDown(e) {
-        this.keys.add(e.code.toLowerCase());
-        this.updateActionsFromKeyboard();
+        const keyMap = {
+            'keya': 'moveLeft', 'keyd': 'moveRight', 'space': 'jump',
+            'keyq': 'shoot', 'keyw': 'melee', 'keye': 'openChest'
+        };
+        const action = keyMap[e.code.toLowerCase()];
+        if (action && this.keyboardState.hasOwnProperty(action)) {
+            this.keyboardState[action] = true;
+            this.updateCombinedActions();
+        }
     }
     
     handleKeyUp(e) {
-        this.keys.delete(e.code.toLowerCase());
-        this.updateActionsFromKeyboard();
+        const keyMap = {
+            'keya': 'moveLeft', 'keyd': 'moveRight', 'space': 'jump',
+            'keyq': 'shoot', 'keyw': 'melee', 'keye': 'openChest'
+        };
+        const action = keyMap[e.code.toLowerCase()];
+        if (action && this.keyboardState.hasOwnProperty(action)) {
+            this.keyboardState[action] = false;
+            this.updateCombinedActions();
+        }
     }
     
-    handleTouchStart(e) {
+    // Handles mousedown and touchstart
+    handleButtonDown(e) {
+        e.preventDefault();
         const action = e.currentTarget.dataset.action;
-        if (action && this.actions.hasOwnProperty(action)) {
-            this.actions[action] = true;
+        if (action && this.buttonState.hasOwnProperty(action)) {
+            this.buttonState[action] = true;
             e.currentTarget.classList.add('pressed');
+            this.updateCombinedActions();
         }
     }
 
-    handleTouchEnd(e) {
-        // When any touch ends, we'll assume all are released for simplicity in a non-multitouch game
-        this.clearAllButtonActions();
-    }
-
-    handleMouseDown(e) {
-        e.preventDefault(); // Prevent text selection on drag
+    // Handles mouseup, touchend, and mouseleave
+    handleButtonUp(e) {
+        e.preventDefault();
         const action = e.currentTarget.dataset.action;
-        if (action && this.actions.hasOwnProperty(action)) {
-            this.actions[action] = true;
-            e.currentTarget.classList.add('pressed');
-        }
-    }
-
-    handleMouseUp(e) {
-        // A global mouseup listener ensures we clear actions even if mouse is released outside a button
-        this.clearAllButtonActions();
-    }
-
-    clearAllButtonActions() {
-        this.touchButtons.forEach(btn => {
-            const action = btn.dataset.action;
-            if (action && this.actions.hasOwnProperty(action)) {
-                this.actions[action] = false;
-                btn.classList.remove('pressed');
+        if (action && this.buttonState.hasOwnProperty(action)) {
+            // Only update if the button was actually pressed
+            if (this.buttonState[action]) {
+                this.buttonState[action] = false;
+                e.currentTarget.classList.remove('pressed');
+                this.updateCombinedActions();
             }
-        });
-    }
-
-    updateActionsFromKeyboard() {
-        this.actions.moveLeft = this.keys.has('keya');
-        this.actions.moveRight = this.keys.has('keyd');
-        this.actions.jump = this.keys.has('space');
-        this.actions.shoot = this.keys.has('keyq');
-        this.actions.melee = this.keys.has('keyw');
-        this.actions.openChest = this.keys.has('keye');
+        }
     }
 
     detach() {
         window.removeEventListener('keydown', this.handleKeyDown);
         window.removeEventListener('keyup', this.handleKeyUp);
-        window.removeEventListener('mouseup', this.handleMouseUp);
         this.touchButtons.forEach(button => {
-            button.removeEventListener('touchstart', this.handleTouchStart);
-            button.removeEventListener('touchend', this.handleTouchEnd);
-            button.removeEventListener('mousedown', this.handleMouseDown);
+            button.removeEventListener('touchstart', this.handleButtonDown);
+            button.removeEventListener('touchend', this.handleButtonUp);
+            button.removeEventListener('mousedown', this.handleButtonDown);
+            button.removeEventListener('mouseup', this.handleButtonUp);
+            button.removeEventListener('mouseleave', this.handleButtonUp);
         });
     }
 }
