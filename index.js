@@ -22,6 +22,7 @@ class Game {
     constructor(canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
+        this.gameContainer = document.getElementById('game-container');
         this.width = CONFIG.GAME.WIDTH;
         this.height = CONFIG.GAME.HEIGHT;
         this.canvas.width = this.width;
@@ -35,6 +36,9 @@ class Game {
         
         this.config = CONFIG; // Make config accessible to managers
 
+        // --- Responsiveness Properties ---
+        this.scale = 1;
+
         // --- Initialize Core Systems & Managers ---
         this.gameStateManager = new GameStateManager(this);
         this.camera = new Camera(this.width, this.height, this.worldWidth);
@@ -46,12 +50,30 @@ class Game {
         this.playerController = null; // Will be created after player is added
         
         this.animate = this.animate.bind(this);
+        this.resize = this.resize.bind(this);
     }
     
+    /**
+     * Resizes and scales the game container to fit the window.
+     */
+    resize() {
+        // Calculate the best scale to fit the game in the window
+        this.scale = Math.min(window.innerWidth / this.width, window.innerHeight / this.height);
+        
+        // Apply the scale transform to the game container, which will be centered by CSS flexbox
+        if (this.gameContainer) {
+            this.gameContainer.style.transform = `scale(${this.scale})`;
+        }
+    }
+
     /**
      * Initializes the game by loading assets and setting up game objects.
      */
     async init() {
+        // Setup resize listener
+        window.addEventListener('resize', this.resize);
+        this.resize(); // Initial resize
+
         try {
             await this.environment.loadAssets();
             await this.entityManager.loadAssets();

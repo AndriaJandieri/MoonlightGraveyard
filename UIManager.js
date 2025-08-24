@@ -197,17 +197,23 @@ export class UIManager {
             event.preventDefault();
             
             const rect = this.game.canvas.getBoundingClientRect();
-            let clickX, clickY;
+            let clientX, clientY;
 
             if (event.touches) {
                 if (event.touches.length === 0) return;
-                clickX = event.touches[0].clientX - rect.left;
-                clickY = event.touches[0].clientY - rect.top;
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
             } else {
-                clickX = event.clientX - rect.left;
-                clickY = event.clientY - rect.top;
+                clientX = event.clientX;
+                clientY = event.clientY;
             }
             
+            // Unscale the coordinates from screen space (relative to the scaled canvas)
+            // to the game's native resolution space.
+            const scale = this.game.scale || 1;
+            const clickX = (clientX - rect.left) / scale;
+            const clickY = (clientY - rect.top) / scale;
+
             const camera = this.game.camera;
             const worldX = clickX + camera.x;
             const worldY = clickY + camera.y;
@@ -350,41 +356,45 @@ export class UIManager {
         const calloutWidth = 30;
 
         const targetScreenX = target.x - camera.x + target.width / 2;
+        const targetScreenY = target.y - camera.y;
+        
         let boxX = targetScreenX - boxWidth / 2;
-        let boxY = target.y - camera.y - boxHeight - calloutHeight - 15;
+        let boxY = targetScreenY - boxHeight - calloutHeight - 5;
+        
         boxX = Math.max(20, Math.min(boxX, this.game.width - boxWidth - 20));
-
+        
         context.save();
-        context.fillStyle = 'rgba(0, 0, 0, 0.85)';
-        context.strokeStyle = 'rgba(122, 14, 14, 0.9)';
-        context.shadowColor = 'rgba(255, 80, 80, 0.7)';
-        context.shadowBlur = 15;
-        context.lineWidth = 3;
-
+        context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        context.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        context.lineWidth = 2;
+        
         context.beginPath();
-        // Drawing path for speech bubble...
         context.moveTo(boxX + borderRadius, boxY);
         context.lineTo(boxX + boxWidth - borderRadius, boxY);
-        context.arcTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius, borderRadius);
+        context.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
         context.lineTo(boxX + boxWidth, boxY + boxHeight - borderRadius);
-        context.arcTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - borderRadius, boxY + boxHeight, borderRadius);
-        const calloutX = Math.max(boxX + borderRadius + calloutWidth / 2, Math.min(targetScreenX, boxX + boxWidth - borderRadius - calloutWidth / 2));
-        context.lineTo(calloutX + calloutWidth / 2, boxY + boxHeight);
-        context.lineTo(calloutX, boxY + boxHeight + calloutHeight);
-        context.lineTo(calloutX - calloutWidth / 2, boxY + boxHeight);
+        context.quadraticCurveTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - borderRadius, boxY + boxHeight);
+        
+        const calloutBaseX = Math.max(boxX + calloutWidth / 2 + 5, Math.min(targetScreenX, boxX + boxWidth - calloutWidth / 2 - 5));
+        
+        context.lineTo(calloutBaseX + calloutWidth / 2, boxY + boxHeight);
+        context.lineTo(calloutBaseX, boxY + boxHeight + calloutHeight);
+        context.lineTo(calloutBaseX - calloutWidth / 2, boxY + boxHeight);
+        
         context.lineTo(boxX + borderRadius, boxY + boxHeight);
-        context.arcTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - borderRadius, borderRadius);
+        context.quadraticCurveTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - borderRadius);
         context.lineTo(boxX, boxY + borderRadius);
-        context.arcTo(boxX, boxY, boxX + borderRadius, boxY, borderRadius);
+        context.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
         context.closePath();
         
         context.fill();
         context.stroke();
-        context.restore();
         
-        context.fillStyle = '#f0e6d2';
+        context.fillStyle = '#fff';
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(dialogue.displayedText, boxX + boxWidth / 2, boxY + boxHeight / 2);
+        
+        context.restore();
     }
 }
